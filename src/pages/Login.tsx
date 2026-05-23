@@ -1,6 +1,18 @@
+/**
+ * @deprecated This file is preserved for reference only and is NO LONGER USED.
+ *
+ * It implemented a client-side localStorage-based authentication system that
+ * stored hashed passwords in the browser — a critical security vulnerability.
+ *
+ * The active authentication entry point is now:
+ *   src/pages/Auth.tsx  →  backed by Supabase Auth (server-side, secure)
+ *
+ * This file should be deleted once the migration is confirmed stable.
+ */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Lock, LogIn, Mail, Trash2, User, UserPlus } from 'lucide-react';
+import { Lock, LogIn, Mail, User, UserPlus } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import AnimatedBackground from '../components/AnimatedBackground';
 import ThemeToggle from '../components/ThemeToggle';
@@ -8,24 +20,20 @@ import { useAuth } from '../context/AuthContext';
 import { glassCard, inputClass, primaryButton, secondaryButton, subtleText } from '../lib/ui';
 
 const Login = () => {
-  const { login, register, deleteAccount, getAllUsers } = useAuth();
+  const { login, register } = useAuth();
   const nav = useNavigate();
 
-  const [mode, setMode] = useState<'select' | 'login' | 'register'>('select');
-  const [selectedEmail, setSelectedEmail] = useState('');
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [regPassword, setRegPassword] = useState('');
   const [error, setError] = useState('');
-
-  const users = getAllUsers();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
 
-    const response = await login(selectedEmail, password);
+    const response = await login(email, password);
 
     if (response.success) {
       nav('/dashboard');
@@ -38,18 +46,12 @@ const Login = () => {
     e.preventDefault();
     setError('');
 
-    const response = await register(name.trim(), email.trim(), regPassword);
+    const response = await register(name.trim(), email.trim(), password);
 
     if (response.success) {
       nav('/dashboard');
     } else {
       setError(response.error || 'Registration failed');
-    }
-  };
-
-  const handleDelete = (userEmail: string) => {
-    if (window.confirm(`Delete account ${userEmail}? This cannot be undone.`)) {
-      deleteAccount(userEmail);
     }
   };
 
@@ -136,11 +138,23 @@ const Login = () => {
                 exit={{ opacity: 0, x: 20 }}
               >
                 <h2 className="mb-4 text-2xl font-bold text-sky-950 dark:text-white">Welcome Back</h2>
-                <p className="mb-6 text-sky-950/85 dark:text-slate-300">
-                  Logging in as <strong>{users.find((u) => u.email === selectedEmail)?.name}</strong>
-                </p>
 
                 <form onSubmit={handleLogin} className="space-y-4">
+                  <div>
+                    <label className="mb-2 block text-sm font-semibold text-sky-950 dark:text-slate-200">
+                      <Mail className="mr-1 inline h-4 w-4" />
+                      Email
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      className={inputClass}
+                      required
+                    />
+                  </div>
+
                   <div>
                     <label className="mb-2 block text-sm font-semibold text-sky-950 dark:text-slate-200">
                       <Lock className="mr-1 inline h-4 w-4" />
@@ -152,6 +166,7 @@ const Login = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="Enter your password"
                       className={inputClass}
+                      required
                     />
                   </div>
 
@@ -172,13 +187,12 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setMode('select');
-                      setPassword('');
+                      setMode('register');
                       setError('');
                     }}
                     className={`${secondaryButton} w-full justify-center`}
                   >
-                    Back to profiles
+                    Create new account
                   </button>
                 </form>
               </motion.div>
@@ -205,6 +219,7 @@ const Login = () => {
                       onChange={(e) => setName(e.target.value)}
                       placeholder="Enter your name"
                       className={inputClass}
+                      required
                     />
                   </div>
 
@@ -219,6 +234,7 @@ const Login = () => {
                       onChange={(e) => setEmail(e.target.value)}
                       placeholder="you@example.com"
                       className={inputClass}
+                      required
                     />
                   </div>
 
@@ -229,10 +245,11 @@ const Login = () => {
                     </label>
                     <input
                       type="password"
-                      value={regPassword}
-                      onChange={(e) => setRegPassword(e.target.value)}
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
                       placeholder="Create a password"
                       className={inputClass}
+                      required
                     />
                   </div>
 
@@ -253,15 +270,12 @@ const Login = () => {
                   <button
                     type="button"
                     onClick={() => {
-                      setMode('select');
-                      setName('');
-                      setEmail('');
-                      setRegPassword('');
+                      setMode('login');
                       setError('');
                     }}
                     className={`${secondaryButton} w-full justify-center`}
                   >
-                    Back to profiles
+                    Back to login
                   </button>
                 </form>
               </motion.div>
