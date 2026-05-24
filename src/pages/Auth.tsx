@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Leaf, Mail, Lock, User } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { hasGuestState } from '../lib/guest';
 
 const Auth = () => {
   const [isLogin, setIsLogin] = useState(true);
@@ -16,7 +17,7 @@ const Auth = () => {
   });
   const [error, setError] = useState('');
   const navigate = useNavigate();
-  const { login, register } = useAuth();
+  const { login, register, enterGuest } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -36,6 +37,9 @@ const Auth = () => {
         const result = await login(formData.email, formData.password);
         if (!result.success) {
           setError(result.error || 'Login failed.');
+          return;
+        }
+        if (hasGuestState()) {
           return;
         }
         navigate('/dashboard');
@@ -189,6 +193,21 @@ const Auth = () => {
             {loading ? 'Processing...' : (isLogin ? 'Sign In' : 'Create Account')}
           </motion.button>
         </form>
+
+        <div className="mt-6 rounded-xl border-2 border-dashed border-gray-200 bg-gray-50 p-4 text-center">
+          <p className="text-sm font-medium text-gray-700">
+            Just want to explore? No account needed.
+          </p>
+          <button
+            onClick={() => {
+              enterGuest();
+              navigate('/dashboard');
+            }}
+            className="mt-3 w-full rounded-xl border-2 border-gray-300 bg-white px-6 py-3 font-semibold text-gray-900 transition-all hover:bg-gray-100"
+          >
+            Play as Guest
+          </button>
+        </div>
 
         {/* Toggle */}
         <div className="mt-6 pt-6 border-t-2 border-gray-200">

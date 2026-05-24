@@ -15,7 +15,7 @@ import {
   TbArrowDown,
   TbPlayerPlay
 } from 'react-icons/tb';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useGamification } from '../hooks/useGamification';
 import { RecommendedChallenges } from '../components/RecommendedChallenges';
@@ -23,7 +23,7 @@ import { RecommendedChallenges } from '../components/RecommendedChallenges';
 
 // ─── XP Panel Component ───────────────────────────────────────
 
-const XPPanel: React.FC<{ authUser: any }> = ({ authUser }) => {
+const XPPanel: React.FC<{ authUser: any; isGuest: boolean }> = ({ authUser, isGuest }) => {
   const { stats, streak, badges, leaderboard, userRank, loading } = useGamification(authUser?.id ?? null);
 
   const streakEmoji = (s: number) =>
@@ -84,7 +84,19 @@ const XPPanel: React.FC<{ authUser: any }> = ({ authUser }) => {
       {/* Leaderboard + Badges */}
       <div className="bg-white/10 backdrop-blur-lg rounded-2xl p-6 border border-white/20">
         <h2 className="text-xl font-bold text-white mb-4">🏆 Leaderboard</h2>
-        {leaderboard && leaderboard.entries.length > 0 ? (
+        {isGuest ? (
+          <div className="space-y-4">
+            <p className="text-white/70 text-sm">
+              Sign in to see rankings and compete with others.
+            </p>
+            <Link
+              to="/login"
+              className="inline-flex rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold text-white hover:bg-white/20"
+            >
+              Sign In
+            </Link>
+          </div>
+        ) : leaderboard && leaderboard.entries.length > 0 ? (
           <div className="space-y-2">
             {leaderboard.entries.slice(0, 5).map((entry) => (
               <div
@@ -143,7 +155,7 @@ const Dashboard = () => {
   const { state, dispatch } = useGame();
   const { user, ecoVillage, dailyChallenges, gameStats } = state;
   const navigate = useNavigate();
-  const { user: authUser } = useAuth();
+  const { user: authUser, isGuest } = useAuth();
 
   const [timeLeft, setTimeLeft] = useState('');
 
@@ -517,7 +529,7 @@ const Dashboard = () => {
       </div>
 
       {/* XP / Streak / Leaderboard Panel */}
-      <XPPanel authUser={authUser} />
+      <XPPanel authUser={isGuest ? null : authUser} isGuest={isGuest} />
 
       {/* Eco Fact */}
       <motion.div
