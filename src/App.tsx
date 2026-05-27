@@ -20,6 +20,7 @@ const Events = React.lazy(() => import('./pages/Events'));
 const LandingPage = React.lazy(() => import('./pages/LandingPage'));
 const Learn = React.lazy(() => import('./pages/Learn'));
 const OceanCleanupGame = React.lazy(() => import('./pages/OceanCleanupGame'));
+const Journey = React.lazy(() => import('./pages/Journey'));
 
 /**
  * Protects routes that require authentication.
@@ -89,8 +90,32 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <GameProvider>
-          <MergePrompt />
-          <AppRoutes />
+          <BrowserRouter>
+            <Suspense fallback={
+              <div className="min-h-screen flex items-center justify-center text-white text-xl">
+                Loading...
+              </div>
+            }>
+              <Routes>
+                {/* Public routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/login" element={<Auth />} />
+
+                {/* Protected routes */}
+                <Route path="/dashboard" element={<Protected><Dashboard /></Protected>} />
+                <Route path="/ocean-cleanup-game" element={<Protected><OceanCleanupGame /></Protected>} />
+                <Route path="/eco-village" element={<Protected><EcoVillage /></Protected>} />
+                <Route path="/learn" element={<Protected><Learn /></Protected>} />
+                <Route path="/journey" element={<Protected><Journey /></Protected>} />
+                <Route path="/bingo" element={<Protected><Bingo /></Protected>} />
+                <Route path="/community" element={<Protected><Community /></Protected>} />
+                <Route path="/events" element={<Protected><Events /></Protected>} />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/dashboard" replace />} />
+              </Routes>
+            </Suspense>
+          </BrowserRouter>
         </GameProvider>
       </AuthProvider>
     </ThemeProvider>
